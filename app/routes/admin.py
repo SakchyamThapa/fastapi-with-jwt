@@ -133,3 +133,30 @@ def delete_tag(tag_id: int, db: Session = Depends(get_db), admin_user: User = De
 
 
 
+# Blog CRUD
+
+@router.post("/blogs", response_model=BlogResponse)
+def create_blog(blog: BlogCreate, db: Session = Depends(get_db), admin_user: User = Depends(require_admin))->BlogResponse:
+    # Validate category
+    category = db.query(Category).get(blog.category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    # Validate tags
+    tags = db.query(Tag).filter(Tag.id.in_(blog.tag_ids)).all() if blog.tag_ids else []
+
+    new_blog = Blog(
+        title=blog.title,
+        author=blog.author,
+        category=category,
+        tags=tags
+    )
+    db.add(new_blog)
+    db.commit()
+
+    db.refresh(new_blog)
+    db.refresh(new_blog, attribute_names=["tags"])
+
+    return new_blog
+
+

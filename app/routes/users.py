@@ -2,16 +2,17 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import User, UserRole
+from app.models import User, UserRole,Blog, Category, Tag
 from app.schemas import (
     UserResponse,
     UserUpdate,
     UserUpdateAdmin,
-    MessageResponse
+    MessageResponse,
+    BlogCreate, BlogResponse
 )
 from app.user_role import hash_password, get_current_user, require_admin
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter(prefix="/users", tags=["Users Blogs"])
 
 
 
@@ -154,3 +155,5 @@ def delete_user(
     user.is_active = False
     db.commit()
     return {"message": f"User {user.email} has been deactivated"}
+
+
