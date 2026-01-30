@@ -157,3 +157,50 @@ def delete_user(
     return {"message": f"User {user.email} has been deactivated"}
 
 
+
+# List all blogs
+
+@router.get("/blogs", response_model=List[BlogResponse])
+def list_blogs(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """List all blogs with category and tags"""
+    return db.query(Blog).all()
+
+# Get single blog by ID
+
+@router.get("/blogs/{blog_id}", response_model=BlogResponse)
+def get_blog(blog_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    blog = db.query(Blog).get(blog_id)
+    if not blog:
+        raise HTTPException(status_code=404, detail="Blog not found")
+    return blog
+
+
+# Create blog (existing category + tags only)
+
+@router.post("/blogs", response_model=BlogResponse)
+def create_blog(
+    blog: BlogCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)  # 🔐 REQUIRED
+):
+    category = db.query(Category).get(blog.category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+
+    tags = []
+    if blog.tag_ids:
+        tags = db.query(Tag).filter(Tag.id.in_(blog.tag_ids)).all()
+        if len(tags) != len(blog.tag_ids):
+            raise HTTPException(status_code=400, detail="One or more tags not found")
+
+    new_blog = Blog(
+        title=blog.title,
+        author=current_user.full_name or current_user.email,
+        category=category,
+        tags=tags
+    )
+
+    db.add(new_blog)
+    db.commit()
+    db.refresh(new_blog)
+    return new_blog
