@@ -160,3 +160,15 @@ def create_blog(blog: BlogCreate, db: Session = Depends(get_db), admin_user: Use
     return new_blog
 
 
+@router.get("/blogs", response_model=List[BlogResponse])
+def get_blogs(db: Session = Depends(get_db), admin_user: User = Depends(require_admin)):
+    return db.query(Blog).all()
+
+@router.get("/blogs/{blog_id}", response_model=BlogResponse)
+def get_blog(blog_id: int, db: Session = Depends(get_db), admin_user: User = Depends(require_admin)):
+    blog = db.query(Blog).get(blog_id)
+    if not blog:
+        raise HTTPException(status_code=404, detail="Blog not found")
+    return blog
+
+
