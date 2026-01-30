@@ -10,7 +10,7 @@ from app.routes import auth, users, admin
 # Create tables
 Base.metadata.create_all(bind=engine)
 
-# Create default admin user if not exists
+
 db = SessionLocal()
 try:
     existing_admin = db.query(User).filter(User.email == settings.ADMIN_EMAIL).first()

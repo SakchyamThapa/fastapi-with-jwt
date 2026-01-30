@@ -1,0 +1,29 @@
+tables name:
+blog,tag,catagory
+
+
+admin:
+(post,getall,get_id,put,delete)->blog tag,catagory
+
+user:
+getall blog with id and tag
+
+
+table structure
+blog(blog_id,blog_name,blog_author)
+tag(tag_id,tag_name) eg : programming,frontend,backend,qa,ai
+catagory(catagory_id,catagory_name) eg : it,business,biotech,bioinformatics
+
+realtion:
+one catagory has many blog (one-many)
+one tag has many blog (one-many)
+one blog has many tag (one-many)
+
+many-many:
+many blog has many tag (many-many)
+
+bridging entity:
+blog_tag(blog_tag_id,tag_id,catagory_id)
+one blog_tag has many tags
+one blog_tag has many blog
+
