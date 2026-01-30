@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     
     # Database
     DATABASE_URL: str
+    DOCKER_URL: str
     
     # Admin credentials
     ADMIN_EMAIL: str
