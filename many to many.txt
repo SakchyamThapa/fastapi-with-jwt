@@ -7,6 +7,7 @@ admin:
 
 user:
 getall blog with id and tag
+post blog with existing tag and catagory
 
 
 table structure

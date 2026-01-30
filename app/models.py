@@ -12,6 +12,7 @@ from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 from app.database import Base
 import enum
+from enum import Enum
 
 
 

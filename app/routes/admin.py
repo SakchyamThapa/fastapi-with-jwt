@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends,HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Blog, Category, Tag, User,UserRole
@@ -7,6 +7,7 @@ from app.schemas import (
     CategoryCreate, CategoryUpdate, CategoryResponse,
     TagCreate, TagUpdate, TagResponse)
 from app.user_role import require_admin
+from typing import List
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -48,3 +49,17 @@ def create_category(
     db.commit()
     db.refresh(new_category)
     return new_category
+
+@router.get("/categories", response_model=List[CategoryResponse])
+def get_categories(db: Session = Depends(get_db), admin_user: User = Depends(require_admin)):
+    return db.query(Category).all()
+
+@router.get("/categories/{category_id}", response_model=CategoryResponse)
+def get_category(category_id: int, db: Session = Depends(get_db), admin_user: User = Depends(require_admin)):
+    category = db.query(Category).get(category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return category
+
+
+
