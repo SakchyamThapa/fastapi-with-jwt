@@ -181,26 +181,33 @@ def get_blog(blog_id: int, db: Session = Depends(get_db), current_user: User = D
 def create_blog(
     blog: BlogCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)  # 🔐 REQUIRED
+    current_user: User = Depends(get_current_user)  # 🔐 only authenticated users
 ):
+
     category = db.query(Category).get(blog.category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
 
+
     tags = []
     if blog.tag_ids:
         tags = db.query(Tag).filter(Tag.id.in_(blog.tag_ids)).all()
+        # Ensure all requested tags exist
         if len(tags) != len(blog.tag_ids):
             raise HTTPException(status_code=400, detail="One or more tags not found")
 
+   
     new_blog = Blog(
         title=blog.title,
         author=current_user.full_name or current_user.email,
-        category=category,
-        tags=tags
+        category=category
     )
+    
+    new_blog.tags = tags
 
+  
     db.add(new_blog)
     db.commit()
     db.refresh(new_blog)
+
     return new_blog

@@ -136,7 +136,7 @@ def delete_tag(tag_id: int, db: Session = Depends(get_db), admin_user: User = De
 # Blog CRUD
 
 @router.post("/blogs", response_model=BlogResponse)
-def create_blog(blog: BlogCreate, db: Session = Depends(get_db), admin_user: User = Depends(require_admin))->BlogResponse:
+def create_blog(blog: BlogCreate, db: Session = Depends(get_db), admin_user: User = Depends(require_admin)):
     # Validate category
     category = db.query(Category).get(blog.category_id)
     if not category:
@@ -144,20 +144,25 @@ def create_blog(blog: BlogCreate, db: Session = Depends(get_db), admin_user: Use
     
     # Validate tags
     tags = db.query(Tag).filter(Tag.id.in_(blog.tag_ids)).all() if blog.tag_ids else []
-
+    
+    # Ensure all tag_ids exist
+    if blog.tag_ids and len(tags) != len(blog.tag_ids):
+        raise HTTPException(status_code=400, detail="One or more tags not found")
+    
+    # Create blog and assign tags
     new_blog = Blog(
         title=blog.title,
         author=blog.author,
         category=category,
-        tags=tags
     )
+    new_blog.tags = tags  # assign AFTER creation
+    
     db.add(new_blog)
     db.commit()
-
     db.refresh(new_blog)
-    db.refresh(new_blog, attribute_names=["tags"])
-
+    
     return new_blog
+
 
 
 @router.get("/blogs", response_model=List[BlogResponse])
