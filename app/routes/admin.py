@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models import User, UserRole
+from app.models import Blog, Category, Tag, User,UserRole
+from app.schemas import (
+    BlogCreate, BlogUpdate, BlogResponse,
+    CategoryCreate, CategoryUpdate, CategoryResponse,
+    TagCreate, TagUpdate, TagResponse)
 from app.user_role import require_admin
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
@@ -28,3 +32,19 @@ def admin_dashboard(
             "user_count": user_count
         }
     }
+
+@router.post("/categories", response_model=CategoryResponse)
+def create_category(
+    category: CategoryCreate,
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_admin)
+):
+    existing = db.query(Category).filter(Category.name == category.name).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Category already exists")
+    
+    new_category = Category(name=category.name)
+    db.add(new_category)
+    db.commit()
+    db.refresh(new_category)
+    return new_category
