@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+from typing import Optional,List
 from datetime import datetime
 from app.models import UserRole
 
@@ -59,3 +59,74 @@ class UserLogin(BaseModel):
 # Message Response
 class MessageResponse(BaseModel):
     message: str
+
+
+#category Schemas
+
+class CategoryBase(BaseModel):
+    name: str = Field(..., max_length=100)
+
+
+class CategoryCreate(CategoryBase):
+    pass
+
+
+class CategoryUpdate(BaseModel):
+    name: Optional[str] = Field(None, max_length=100)
+
+
+class CategoryResponse(CategoryBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+class TagBase(BaseModel):
+    name: str = Field(..., max_length=100)
+
+
+class TagCreate(TagBase):
+    pass
+
+
+class TagUpdate(BaseModel):
+    name: Optional[str] = Field(None, max_length=100)
+
+
+class TagResponse(TagBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+
+#Blog Schemas
+class BlogBase(BaseModel):
+    title: str = Field(..., max_length=255)
+    author: str = Field(..., max_length=255)
+    category_id: int
+    tag_ids: List[int] = []
+
+class BlogCreate(BlogBase):
+    pass
+
+
+class BlogUpdate(BaseModel):
+    title: Optional[str] = Field(None, max_length=255)
+    author: Optional[str] = Field(None, max_length=255)
+    category_id: Optional[int] = None
+    tag_ids: Optional[List[int]] = None
+
+
+class BlogResponse(BaseModel):
+    id: int
+    title: str
+    author: str
+    category: CategoryResponse
+    tags: List[TagResponse]
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
